@@ -1,16 +1,25 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/olufekosamuel/blog-api/controllers"
 	"github.com/olufekosamuel/blog-api/helpers"
+	"github.com/olufekosamuel/blog-api/models"
 )
 
-func Test(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Works", 200)
+func Index(w http.ResponseWriter, r *http.Request) {
+
+	json.NewEncoder(w).Encode(
+		models.Response{
+			Msg:    "Blog api works",
+			Status: "success",
+			Error:  false,
+		},
+	)
 }
 
 func main() {
@@ -27,7 +36,7 @@ func main() {
 	}
 
 	// endpoints
-	http.HandleFunc("/", Test)
+	http.HandleFunc("/", Index)
 	http.HandleFunc("/v1/login", controllers.Login)
 	http.HandleFunc("/v1/register", controllers.Register)
 
