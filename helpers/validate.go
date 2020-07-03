@@ -1,8 +1,8 @@
 package helpers
 
-import "blog-api/models"
+import "github.com/olufekosamuel/blog-api/models"
 
-func validate(u models.User) (string, error) {
+func Validate(u models.User) (string, error) {
 	if u.Email == "" {
 		return "Email cannot be empty", nil
 	}
@@ -15,4 +15,6 @@ func validate(u models.User) (string, error) {
 	if u.Password == "" {
 		return "Password cannot be empty", nil
 	}
+
+	return "", nil
 }

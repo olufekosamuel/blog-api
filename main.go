@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/olufekosamuel/blog-api/controllers"
+	"github.com/olufekosamuel/blog-api/helpers"
 )
 
 func Test(w http.ResponseWriter, r *http.Request) {
@@ -12,6 +15,12 @@ func Test(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
+	createTableErr := helpers.CreateTables()
+
+	if createTableErr != nil {
+		panic(createTableErr)
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
@@ -19,6 +28,7 @@ func main() {
 
 	// endpoints
 	http.HandleFunc("/", Test)
+	http.HandleFunc("/v1/register", controllers.Register)
 
 	port = fmt.Sprintf(":%s", port)
 
