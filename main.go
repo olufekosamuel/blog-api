@@ -28,6 +28,7 @@ func main() {
 
 	// endpoints
 	http.HandleFunc("/", Test)
+	http.HandleFunc("/v1/login", controllers.Login)
 	http.HandleFunc("/v1/register", controllers.Register)
 
 	port = fmt.Sprintf(":%s", port)
