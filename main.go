@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/olufekosamuel/blog-api/controllers"
+	"github.com/olufekosamuel/blog-api/handlers"
 	"github.com/olufekosamuel/blog-api/helpers"
 	"github.com/olufekosamuel/blog-api/models"
 )
@@ -35,16 +35,14 @@ func main() {
 		port = "3000"
 	}
 
-	// endpoints
-	http.HandleFunc("/", Index)
-	http.HandleFunc("/v1/login", controllers.Login)
-	http.HandleFunc("/v1/register", controllers.Register)
+	//setup router and middlewares with chi
+	r := handlers.SetupRouter()
 
 	port = fmt.Sprintf(":%s", port)
 
 	fmt.Println(fmt.Sprintf("application is running on port %s", port))
 
-	err := http.ListenAndServe(port, nil)
+	err := http.ListenAndServe(port, r)
 	if err != nil {
 		fmt.Println(err)
 	}
