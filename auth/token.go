@@ -12,13 +12,16 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-func CreateToken(email string) (string, error) {
-	claims := jwt.MapClaims{}
+func CreateToken(email string, id int) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS512)
+	claims := make(jwt.MapClaims)
 	claims["authorized"] = true
 	claims["email"] = email
+	claims["id"] = id
 	claims["exp"] = time.Now().Add(time.Hour * 8760).Unix() //Token expires after 1 year
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte("mysignedstring"))
+
+	token.Claims = claims
+	return token.SignedString([]byte("nZr4u7x!z%C*F-JaNdRgUkXp2s5v8y/B?D(G+KbPeShVmYq3t6w9z$C&F)H@McQf"))
 }
 
 func TokenValid(r *http.Request) error {
@@ -27,7 +30,7 @@ func TokenValid(r *http.Request) error {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte("mysignedstring"), nil
+		return []byte("nZr4u7x!z%C*F-JaNdRgUkXp2s5v8y/B?D(G+KbPeShVmYq3t6w9z$C&F)H@McQf"), nil
 	})
 	if err != nil {
 		return err
@@ -51,6 +54,28 @@ func ExtractToken(r *http.Request) string {
 	return ""
 }
 
+func ExtractTokenId(r *http.Request) (int, error) {
+
+	tokenString := ExtractToken(r)
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("nZr4u7x!z%C*F-JaNdRgUkXp2s5v8y/B?D(G+KbPeShVmYq3t6w9z$C&F)H@McQf")), nil
+	})
+	fmt.Println(err)
+	if err != nil {
+		return 0, err
+	}
+	fmt.Println("srage 1")
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		fmt.Println("srage 2")
+		return claims["id"].(int), nil
+	}
+	return 0, nil
+}
+
 func ExtractTokenEmail(r *http.Request) (string, error) {
 
 	tokenString := ExtractToken(r)
@@ -58,7 +83,7 @@ func ExtractTokenEmail(r *http.Request) (string, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("mysignedstring")), nil
+		return []byte(os.Getenv("nZr4u7x!z%C*F-JaNdRgUkXp2s5v8y/B?D(G+KbPeShVmYq3t6w9z$C&F)H@McQf")), nil
 	})
 	if err != nil {
 		return "", err

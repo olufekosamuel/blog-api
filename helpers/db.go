@@ -35,7 +35,9 @@ func CreateTables() error {
 		return nil
 	}
 
-	query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS users(id SERIAL, email VARCHAR PRIMARY KEY,firstname VARCHAR, lastname VARCHAR, password VARCHAR, createdat TIMESTAMP);
+	query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS users(id SERIAL PRIMARY KEY, email VARCHAR UNIQUE,firstname VARCHAR, lastname VARCHAR, password VARCHAR, createdat TIMESTAMP);
+						CREATE TABLE IF NOT EXISTS posts(id SERIAL, user_id int NOT NULL, title VARCHAR, content TEXT, published_date TIMESTAMP,  updatedat TIMESTAMP,
+							PRIMARY KEY (id), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);
 						`)
 	_, err = db.Exec(query)
 

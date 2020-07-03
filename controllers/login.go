@@ -24,7 +24,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		}
 		defer db.Close()
 
-		query := fmt.Sprintf(`SELECT password FROM users WHERE email = '%s'`, user.Email)
+		query := fmt.Sprintf(`SELECT id, password FROM users WHERE email = '%s'`, user.Email)
 		rows, err := db.Query(query)
 
 		if err != nil {
@@ -34,16 +34,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		defer rows.Close()
 
 		var password string
+		var id int
 
 		for rows.Next() {
-			rows.Scan(&password)
+			rows.Scan(&id, &password)
 		}
+		fmt.Println(id)
 
 		fmt.Println(helpers.CheckPasswordHash(user.Password, password), password, user.Password)
 
 		if helpers.CheckPasswordHash(user.Password, password) == true {
 			// create jwt
-			tokenStr, err := auth.CreateToken(user.Email)
+			tokenStr, err := auth.CreateToken(user.Email, id)
 
 			if err != nil {
 				http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "problem generating token"), 400)
@@ -63,6 +65,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			Error:  true,
 			Msg:    "Invalid login credentials",
 		})
+
 		return
 	}
 	http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "method not allowed"), 400)

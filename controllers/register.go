@@ -46,9 +46,9 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		}
 		defer db.Close()
 
-		query := fmt.Sprintf(`INSERT INTO users(email,firstname,lastname,password,status,createdat) VALUES('%s','%s','%s','%s','%s','%s');`, user.Email, user.Firstname, user.Lastname, hashed, "0", time.Now().Format(time.RFC3339))
+		query := fmt.Sprintf(`INSERT INTO users(email,firstname,lastname,password,createdat) VALUES('%s','%s','%s','%s','%s') RETURNING id`, user.Email, user.Firstname, user.Lastname, hashed, time.Now().Format(time.RFC3339))
 
-		_, err = db.Exec(query)
+		rows, err := db.Query(query)
 
 		if err != nil {
 			fmt.Println(err)
@@ -56,8 +56,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		for rows.Next() {
+			rows.Scan(&user.ID)
+		}
+
+		fmt.Println(user)
 		// create jwt
-		tokenStr, err := auth.CreateToken(user.Email)
+		tokenStr, err := auth.CreateToken(user.Email, user.ID)
 		if err != nil {
 			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "problem generating token"), 400)
 			return
