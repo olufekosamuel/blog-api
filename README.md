@@ -5,6 +5,8 @@ simple blog api with authentication built with golang
 
 - You need to have Go installed on your computer. The version used for the tutorial is  **1.13**.
 
+- Postgres database running either locally or remote.
+
 ## Get started
 
 - Clone this repository to your filesystem.
