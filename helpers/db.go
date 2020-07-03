@@ -35,10 +35,7 @@ func CreateTables() error {
 		return nil
 	}
 
-	query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS users(id SERIAL, email VARCHAR PRIMARY KEY,firstname VARCHAR, lastname VARCHAR, password VARCHAR, status VARCHAR, createdat TIMESTAMP);
-						  CREATE TABLE IF NOT EXISTS api_keys(id SERIAL, email VARCHAR PRIMARY KEY,value VARCHAR, createdat TIMESTAMP);
-						  CREATE TABLE IF NOT EXISTS signup_temp(id SERIAL, email VARCHAR,value VARCHAR, createdat TIMESTAMP);
-						  CREATE TABLE IF NOT EXISTS forgot_temp(id SERIAL, email VARCHAR,value VARCHAR, createdat TIMESTAMP);
+	query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS users(id SERIAL, email VARCHAR PRIMARY KEY,firstname VARCHAR, lastname VARCHAR, password VARCHAR, createdat TIMESTAMP);
 						`)
 	_, err = db.Exec(query)
 
@@ -57,7 +54,6 @@ func DropTables() error {
 	}
 
 	query := fmt.Sprintf(`DROP TABLE IF EXISTS users;
-						  DROP TABLE IF EXISTS signup_temp;
 						`)
 	// DROP TABLE IF EXISTS api_keys;
 	_, err = db.Exec(query)

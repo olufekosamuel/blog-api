@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/lithammer/shortuuid"
 	"github.com/olufekosamuel/blog-api/auth"
 	"github.com/olufekosamuel/blog-api/helpers"
 	"github.com/olufekosamuel/blog-api/models"
@@ -47,10 +46,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		}
 		defer db.Close()
 
-		key := shortuuid.New() // create unique key for email validation
-
-		query := fmt.Sprintf(`INSERT INTO users(email,firstname,lastname,password,status,createdat) VALUES('%s','%s','%s','%s','%s','%s');
-		INSERT INTO signup_temp(email,value,createdat) VALUES('%s','%s','%s')`, user.Email, user.Firstname, user.Lastname, hashed, "0", time.Now().Format(time.RFC3339), user.Email, key[:4], time.Now().Format(time.RFC3339))
+		query := fmt.Sprintf(`INSERT INTO users(email,firstname,lastname,password,status,createdat) VALUES('%s','%s','%s','%s','%s','%s');`, user.Email, user.Firstname, user.Lastname, hashed, "0", time.Now().Format(time.RFC3339))
 
 		_, err = db.Exec(query)
 
@@ -66,10 +62,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "problem generating token"), 400)
 			return
 		}
-		/*
-			go helpers.SendEmail(user.Email, key[:4])
-			fmt.Println(key[:4])
-		*/
+
 		// if there are no errors, return json response object
 		json.NewEncoder(w).Encode(models.Response{
 			Msg:    "User created successfully",
