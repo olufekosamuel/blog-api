@@ -53,7 +53,7 @@ func ExtractToken(r *http.Request) string {
 	return ""
 }
 
-func ExtractTokenId(r *http.Request) (int, error) {
+func ExtractTokenId(r *http.Request) (float64, error) {
 
 	tokenString := ExtractToken(r)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -62,15 +62,13 @@ func ExtractTokenId(r *http.Request) (int, error) {
 		}
 		return []byte("nZr4u7x!z%C*F-JaNdRgUkXp2s5v8y/B?D(G+KbPeShVmYq3t6w9z$C&F)H@McQf"), nil
 	})
-	fmt.Println(err)
+
 	if err != nil {
 		return 0, err
 	}
-	fmt.Println("srage 1")
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		fmt.Println("srage 2")
-		return claims["id"].(int), nil
+		return claims["id"].(float64), nil
 	}
 	return 0, nil
 }
