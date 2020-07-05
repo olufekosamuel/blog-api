@@ -18,3 +18,11 @@ simple blog api with authentication built with golang
 - POST Register /v1/register
 
 - POST Login /v1/login
+
+- GET Get all posts /v1/post
+
+- POST create post (authenticated user only) /v1/post
+
+- PUT edit Post (authenticated user only) /v1/post
+
+- DELETE delete post (authenticated user only) /v1/post 
