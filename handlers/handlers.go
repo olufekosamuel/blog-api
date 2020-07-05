@@ -27,7 +27,7 @@ func authRouter() http.Handler {
 	r.Use(checkJWT)
 	r.Post("/post", controllers.CreatePost)   //POST /create post
 	r.Delete("/post", controllers.DeletePost) //DELETE /delete a particular post in blog
-	r.Put("/post/{id}", controllers.EditPost) //PUT /edit a particular post in blog
+	r.Put("/post", controllers.EditPost)      //PUT /edit a particular post in blog
 
 	return r
 }
@@ -45,7 +45,6 @@ func checkJWT(next http.Handler) http.Handler {
 			return
 		}
 
-		fmt.Println("passed jare")
 		next.ServeHTTP(w, r)
 
 	})

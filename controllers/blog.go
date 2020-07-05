@@ -3,9 +3,11 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
+	"github.com/ichtrojan/thoth"
 	"github.com/olufekosamuel/blog-api/auth"
 	"github.com/olufekosamuel/blog-api/helpers"
 
@@ -13,14 +15,21 @@ import (
 )
 
 func GetPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
 
 	if (*r).Method == "GET" {
 
 		posts := make([]*models.Post, 0)
 
+		file, err := thoth.Init("log")
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		db, err := helpers.InitDB() // connect to database
 		if err != nil {
-			panic(err)
+			file.Log(err)
 		}
 		defer db.Close()
 
@@ -28,7 +37,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 		rows, err := db.Query(query)
 
 		if err != nil {
-			panic(err)
+			file.Log(err)
 		}
 
 		defer rows.Close()
@@ -36,7 +45,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 			post := new(models.Post)
 			if err := rows.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.PublishedAt, &post.UpdatedAt); err != nil {
-				panic(err)
+				file.Log(err)
 			}
 			posts = append(posts, post)
 
@@ -62,6 +71,12 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	id, err := auth.ExtractTokenId(r)
 
+	file, err := thoth.Init("log")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if err != nil {
 		http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "Unathorized"), 401)
 		return
@@ -69,23 +84,23 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	var post models.Post
 	var new_id int = int(id)
+	fmt.Println(new_id)
 	_ = json.NewDecoder(r.Body).Decode(&post)
 
 	if (*r).Method == "POST" {
 
 		db, err := helpers.InitDB() // connect to database
 		if err != nil {
-			panic(err)
+			file.Log(err)
 		}
 		defer db.Close()
 
-		query := fmt.Sprintf(`INSERT INTO posts(user_id,title,content,published_date,updatedat) VALUES('%d','%s','%s','%s','%s');`, new_id, post.Title, post.Content, time.Now().Format(time.RFC3339), time.Now().Format(time.RFC3339))
-
-		_, err = db.Exec(query)
+		query := `INSERT INTO posts(user_id,title,content,published_date,updatedat) VALUES($1,$2,$3,$4,$5);`
+		_, err = db.Exec(query, new_id, post.Title, post.Content, time.Now().Format(time.RFC3339), time.Now().Format(time.RFC3339))
 
 		if err != nil {
-			fmt.Println(err)
-			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":"%s"}`, "an error occured while creating post"), 400)
+			file.Log(err)
+			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":"%s"}`, err.Error()), 400)
 			return
 		}
 
@@ -105,8 +120,16 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func EditPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+
 	if (*r).Method == "PUT" {
 		user_id, err := auth.ExtractTokenId(r)
+
+		file, err := thoth.Init("log")
+
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		if err != nil {
 			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "Unathorized"), 401)
@@ -123,18 +146,19 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 
 		json.NewDecoder(r.Body).Decode(&post)
 
-		fmt.Println(post)
-
 		db, err := helpers.InitDB() // connect to database
 		if err != nil {
-			panic(err)
+			file.Log(err)
 		}
 		defer db.Close()
 
-		query := fmt.Sprintf(`UPDATE posts SET title= '%s', content='%s' WHERE id = '%d' AND user_id = '%d' `, post.Title, post.Content, post.ID, new_user_id)
-		_, err = db.Exec(query)
+		query := `UPDATE posts SET title = $1, content = $2 WHERE id = $3 AND user_id = $4`
+		fmt.Println(query)
+
+		_, err = db.Query(query, post.Title, post.Content, post.ID, new_user_id)
 
 		if err != nil {
+			file.Log(err)
 			http.Error(w, fmt.Sprintf(`{"status":"error","msg":"%s"}`, err.Error()), 400)
 			return
 		}
@@ -155,9 +179,16 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeletePost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
 
 	if (*r).Method == "DELETE" {
 		w.Header().Set("content-type", "application/json")
+
+		file, err := thoth.Init("log")
+
+		if err != nil {
+			log.Fatal(err)
+		}
 		user_id, err := auth.ExtractTokenId(r)
 
 		if err != nil {
@@ -171,7 +202,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 
 		db, err := helpers.InitDB() // connect to database
 		if err != nil {
-			panic(err)
+			file.Log(err)
 		}
 		defer db.Close()
 
@@ -179,6 +210,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		_, err = db.Exec(query)
 
 		if err != nil {
+			file.Log(err)
 			http.Error(w, fmt.Sprintf(`{"status":"error","msg":"%s"}`, err.Error()), 400)
 			return
 		}

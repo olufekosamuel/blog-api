@@ -39,9 +39,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 			rows.Scan(&id, &password)
 		}
-		fmt.Println(id)
-
-		fmt.Println(helpers.CheckPasswordHash(user.Password, password), password, user.Password)
 
 		if helpers.CheckPasswordHash(user.Password, password) == true {
 			// create jwt

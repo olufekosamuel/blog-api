@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
+	"github.com/ichtrojan/thoth"
 	"github.com/olufekosamuel/blog-api/handlers"
 	"github.com/olufekosamuel/blog-api/helpers"
 	"github.com/olufekosamuel/blog-api/models"
@@ -23,6 +25,12 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	file, err := thoth.Init("log")
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	createTableErr := helpers.CreateTables()
 
@@ -42,8 +50,11 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("application is running on port %s", port))
 
-	err := http.ListenAndServe(port, r)
-	if err != nil {
-		fmt.Println(err)
+	if err := file.Serve("/logs", "12345"); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := http.ListenAndServe(port, r); err != nil {
+		file.Log(err)
 	}
 }
