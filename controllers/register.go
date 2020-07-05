@@ -33,7 +33,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		}
 
 		hashed, err := helpers.HashPassword(user.Password) // hash password
-		fmt.Println("Hashed password", hashed)
 		if err != nil {
 			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":"%s"}`, err), 400)
 			return
@@ -51,7 +50,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		rows, err := db.Query(query)
 
 		if err != nil {
-			fmt.Println(err)
 			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":"%s"}`, "user already exists"), 400)
 			return
 		}
@@ -60,7 +58,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			rows.Scan(&user.ID)
 		}
 
-		fmt.Println(user)
 		// create jwt
 		tokenStr, err := auth.CreateToken(user.Email, user.ID)
 		if err != nil {

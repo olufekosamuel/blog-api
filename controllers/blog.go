@@ -33,7 +33,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 		}
 		defer db.Close()
 
-		query := fmt.Sprintf(`SELECT * FROM posts`)
+		query := fmt.Sprintf(`SELECT id, user_id, title, published_date, updatedat FROM posts`)
 		rows, err := db.Query(query)
 
 		if err != nil {
@@ -44,7 +44,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 
 		for rows.Next() {
 			post := new(models.Post)
-			if err := rows.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.PublishedAt, &post.UpdatedAt); err != nil {
+			if err := rows.Scan(&post.ID, &post.UserID, &post.Title, &post.PublishedAt, &post.UpdatedAt); err != nil {
 				file.Log(err)
 			}
 			posts = append(posts, post)
@@ -54,6 +54,67 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 		// if there are no errors, return json response object
 		json.NewEncoder(w).Encode(models.Response{
 			Posts:  posts,
+			Status: "success",
+			Error:  false,
+		})
+
+		return
+
+	}
+
+	http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "Method not allowed"), 405)
+	return
+
+}
+
+func GetPostDetail(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+
+	if (*r).Method == "GET" {
+
+		var post models.Post
+		json.NewDecoder(r.Body).Decode(&post)
+
+		if post.ID <= 0 {
+			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "Bad Request"), 400)
+			return
+		}
+
+		file, err := thoth.Init("log")
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		db, err := helpers.InitDB() // connect to database
+		if err != nil {
+			file.Log(err)
+		}
+		defer db.Close()
+
+		query := fmt.Sprintf(`SELECT * FROM posts WHERE id=$1`)
+		rows, err := db.Query(query, post.ID)
+
+		if err != nil {
+			file.Log(err)
+		}
+
+		defer rows.Close()
+
+		for rows.Next() {
+			if err := rows.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.PublishedAt, &post.UpdatedAt); err != nil {
+				file.Log(err)
+			}
+		}
+
+		if post.Title == "" {
+			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "Bad Request"), 400)
+			return
+		}
+
+		// if there are no errors, return json response object
+		json.NewEncoder(w).Encode(models.ResponsePost{
+			Post:   post,
 			Status: "success",
 			Error:  false,
 		})
@@ -84,7 +145,6 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	var post models.Post
 	var new_id int = int(id)
-	fmt.Println(new_id)
 	_ = json.NewDecoder(r.Body).Decode(&post)
 
 	if (*r).Method == "POST" {
@@ -152,14 +212,24 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 		}
 		defer db.Close()
 
-		query := `UPDATE posts SET title = $1, content = $2 WHERE id = $3 AND user_id = $4`
-		fmt.Println(query)
+		query := `UPDATE posts SET title = $1, content = $2, updatedat = $3 WHERE id = $4 AND user_id = $5 returning id`
 
-		_, err = db.Query(query, post.Title, post.Content, post.ID, new_user_id)
+		rows, err := db.Query(query, post.Title, post.Content, time.Now().Format(time.RFC3339), post.ID, new_user_id)
 
 		if err != nil {
 			file.Log(err)
 			http.Error(w, fmt.Sprintf(`{"status":"error","msg":"%s"}`, err.Error()), 400)
+			return
+		}
+
+		var id int
+
+		for rows.Next() {
+			rows.Scan(&id)
+		}
+
+		if id == 0 {
+			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "Bad Request"), 400)
 			return
 		}
 
@@ -182,7 +252,6 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 
 	if (*r).Method == "DELETE" {
-		w.Header().Set("content-type", "application/json")
 
 		file, err := thoth.Init("log")
 
@@ -206,12 +275,23 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		}
 		defer db.Close()
 
-		query := fmt.Sprintf(`DELETE FROM posts WHERE id = '%d' AND user_id = '%d' `, post.ID, new_user_id)
-		_, err = db.Exec(query)
+		query := fmt.Sprintf(`DELETE FROM posts WHERE id = '%d' AND user_id = '%d' returning id `, post.ID, new_user_id)
+		rows, err := db.Query(query)
 
 		if err != nil {
 			file.Log(err)
 			http.Error(w, fmt.Sprintf(`{"status":"error","msg":"%s"}`, err.Error()), 400)
+			return
+		}
+
+		var id int
+
+		for rows.Next() {
+			rows.Scan(&id)
+		}
+
+		if id == 0 {
+			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "Bad Request"), 400)
 			return
 		}
 

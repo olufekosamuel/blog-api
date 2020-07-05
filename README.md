@@ -13,6 +13,9 @@ simple blog api with authentication built with golang
 
 - `cd` into the project directory, install dependencies and start project, with command "go run main.go --apikey="news api key".
 
+## Documentation
+[https://documenter.getpostman.com/view/4823089/T17Gennu?version=latest](find here)
+
 ## Endpoints
 
 - POST Register /v1/register
@@ -21,8 +24,10 @@ simple blog api with authentication built with golang
 
 - GET Get all posts /v1/post
 
+- GET Get post detail /v1/post/detail
+
 - POST create post (authenticated user only) /v1/post
 
-- PUT edit Post (authenticated user only) /v1/post
+- PUT edit post (authenticated user only) /v1/post
 
 - DELETE delete post (authenticated user only) /v1/post 

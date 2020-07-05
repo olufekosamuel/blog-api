@@ -15,7 +15,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	if (*r).Method == "POST" {
 
-		var user models.User
+		var user models.UserLogin
 		_ = json.NewDecoder(r.Body).Decode(&user) // decode the from json into our models.User struct
 
 		db, err := helpers.InitDB() // connect to database

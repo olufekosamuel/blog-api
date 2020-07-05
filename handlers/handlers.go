@@ -37,7 +37,7 @@ cleaned up code to check JWT token is still valid before making access into the 
 */
 func checkJWT(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
+		w.Header().Set("content-type", "application/json")
 		err := auth.TokenValid(r)
 
 		if err != nil {
@@ -57,15 +57,11 @@ func SetupRouter() *chi.Mux {
 	setupMiddleware(r)
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Post("/login", controllers.Login)       //POST /login
-		r.Post("/register", controllers.Register) //POST /register
-		r.Get("/post", controllers.GetPost)       //GET /get all post in blog
+		r.Post("/login", controllers.Login)              //POST /login
+		r.Post("/register", controllers.Register)        //POST /register
+		r.Get("/post", controllers.GetPost)              //GET /get all post in blog
+		r.Get("/post/detail", controllers.GetPostDetail) //GET /get a post detail
 		r.Mount("/", authRouter())
-
-		/*
-			r.Get("/{phonenumber}", getContact)       //POST /contacts/0147344454
-			r.Post("/", addContact)                   //POST /contacts
-		*/
 	})
 
 	return r
