@@ -14,7 +14,7 @@ simple blog api with authentication built with golang
 - `cd` into the project directory, install dependencies and start project, with command "go run main.go --apikey="news api key".
 
 ## Documentation
-[https://documenter.getpostman.com/view/4823089/T17Gennu?version=latest](find here)
+[find here](https://documenter.getpostman.com/view/4823089/T17Gennu?version=latest)
 
 ## Endpoints
 
