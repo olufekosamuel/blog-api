@@ -61,7 +61,7 @@ func SetupRouter() *chi.Mux {
 		r.Post("/register", controllers.Register)        //POST /register
 		r.Get("/post", controllers.GetPost)              //GET /get all post in blog
 		r.Get("/post/detail", controllers.GetPostDetail) //GET /get a post detail
-		r.Mount("/", authRouter())
+		r.Mount("/", authRouter())                       //All route that need authentication before access
 	})
 
 	return r

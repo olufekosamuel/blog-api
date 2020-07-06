@@ -14,6 +14,9 @@ import (
 	"github.com/olufekosamuel/blog-api/models"
 )
 
+/*
+Get all list of post in the blog
+*/
 func GetPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 
@@ -21,7 +24,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 
 		posts := make([]*models.Post, 0)
 
-		file, err := thoth.Init("log")
+		file, err := thoth.Init("log") //setting up thoth for logging errors
 
 		if err != nil {
 			log.Fatal(err)
@@ -67,6 +70,9 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 
 }
 
+/*
+Get a particular post detail in the blog
+*/
 func GetPostDetail(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 
@@ -75,12 +81,13 @@ func GetPostDetail(w http.ResponseWriter, r *http.Request) {
 		var post models.Post
 		json.NewDecoder(r.Body).Decode(&post)
 
+		//if id is less than or equal to zero, meaning no id or negative id was passed as json, then return an error.
 		if post.ID <= 0 {
 			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "Bad Request"), 400)
 			return
 		}
 
-		file, err := thoth.Init("log")
+		file, err := thoth.Init("log") // thoth for error log
 
 		if err != nil {
 			log.Fatal(err)
@@ -107,6 +114,7 @@ func GetPostDetail(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		//if title is empty, definitely means it does not exist in db, return bad request.
 		if post.Title == "" {
 			http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "Bad Request"), 400)
 			return
@@ -128,17 +136,17 @@ func GetPostDetail(w http.ResponseWriter, r *http.Request) {
 
 }
 
+/*
+Create a post in the blog, requires authentication
+*/
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
+	file, err := thoth.Init("log")
 	id, err := auth.ExtractTokenId(r)
 
-	file, err := thoth.Init("log")
-
+	//if error in extract token request, means something is wrong with JWT return error
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err != nil {
+		file.Log(err)
 		http.Error(w, fmt.Sprintf(`{"status":"error","error":true,"msg":%s}`, "Unathorized"), 401)
 		return
 	}
@@ -179,6 +187,9 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 
 }
 
+/*
+Edit a post in the blog, requires authentication
+*/
 func EditPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 
@@ -248,6 +259,9 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+/*
+Delete a post in the blog, requires authentication
+*/
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 
