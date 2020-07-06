@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/ichtrojan/thoth"
+	"github.com/joho/godotenv"
 	"github.com/olufekosamuel/blog-api/handlers"
 	"github.com/olufekosamuel/blog-api/helpers"
 	"github.com/olufekosamuel/blog-api/models"
@@ -38,8 +39,14 @@ func main() {
 		panic(createTableErr)
 	}
 
+	// load .env file
+	envErr := godotenv.Load(".env")
+	if envErr != nil {
+		file.Log(envErr)
+	}
 	port := os.Getenv("PORT")
 	if port == "" {
+		fmt.Println("no port")
 		port = "3002"
 	}
 

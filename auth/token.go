@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 )
 
 func CreateToken(email string, id int) (string, error) {
+
 	token := jwt.New(jwt.SigningMethodHS512)
 	claims := make(jwt.MapClaims)
 	claims["authorized"] = true
@@ -20,7 +22,7 @@ func CreateToken(email string, id int) (string, error) {
 	claims["exp"] = time.Now().Add(time.Hour * 8760).Unix() //Token expires after 1 year
 
 	token.Claims = claims
-	return token.SignedString([]byte("nZr4u7x!z%C*F-JaNdRgUkXp2s5v8y/B?D(G+KbPeShVmYq3t6w9z$C&F)H@McQf"))
+	return token.SignedString([]byte(os.Getenv("SIGNING_KEY")))
 }
 
 func TokenValid(r *http.Request) error {
@@ -29,7 +31,7 @@ func TokenValid(r *http.Request) error {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte("nZr4u7x!z%C*F-JaNdRgUkXp2s5v8y/B?D(G+KbPeShVmYq3t6w9z$C&F)H@McQf"), nil
+		return []byte(os.Getenv("SIGNING_KEY")), nil
 	})
 	if err != nil {
 		return err
@@ -60,7 +62,7 @@ func ExtractTokenId(r *http.Request) (float64, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte("nZr4u7x!z%C*F-JaNdRgUkXp2s5v8y/B?D(G+KbPeShVmYq3t6w9z$C&F)H@McQf"), nil
+		return []byte(os.Getenv("SIGNING_KEY")), nil
 	})
 
 	if err != nil {
@@ -80,7 +82,7 @@ func ExtractTokenEmail(r *http.Request) (string, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte("nZr4u7x!z%C*F-JaNdRgUkXp2s5v8y/B?D(G+KbPeShVmYq3t6w9z$C&F)H@McQf"), nil
+		return []byte(os.Getenv("SIGNING_KEY")), nil
 	})
 	if err != nil {
 		return "", err
