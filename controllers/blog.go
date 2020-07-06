@@ -121,8 +121,8 @@ func GetPostDetail(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// if there are no errors, return json response object
-		json.NewEncoder(w).Encode(models.ResponsePost{
-			Post:   post,
+		json.NewEncoder(w).Encode(models.Response{
+			Post:   &post,
 			Status: "success",
 			Error:  false,
 		})
